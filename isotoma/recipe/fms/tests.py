@@ -63,3 +63,31 @@ class RetrivalTests(unittest.TestCase):
         
         f = open(path).read()
         self.assertTrue(self.destination in f)
+        
+    def testFixConfig(self):
+        """ Fix the config files with the options that we give """
+        
+        tarball = self.recipe.get_tarball(self.download_url, self.download_dir)
+        
+        extracted = self.recipe.install_tarball(self.download_dir, tarball, self.destination)
+        
+        options = {}
+        options['admin_username'] = "foo"
+        options['admin_password'] = "foo"
+        options['adminserver_hostport'] = "foo"
+        options['process_uid'] = "foo"
+        options['process_gid'] = "foo"
+        options['licenseinfo'] = "foo"
+        options['httpd_enabled'] = "foo"
+        options['hostport'] = "foo"
+        options['live_dir'] = "foo"
+        options['vod_common_dir'] = "foo"
+        options['vod_dir'] = "foo"
+        options['appsdir'] = "foo"
+        options['js_scriptlibpath'] = "foo"
+        
+        locations = self.recipe.create_config(self.destination, options)
+        
+        for loc in locations:
+            f = open(loc).read()
+            self.assertTrue('foo' in f)

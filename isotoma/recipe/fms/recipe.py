@@ -37,11 +37,21 @@ class Recipe(object):
         # now we have that, we need to extract it
         installed_location = self.install_tarball(download_dir, tarball, self.options['install_location'])
         
+        # set the options defaults for ourselves
+        self.options.setdefault('live_dir', os.path.join(installed_location, 'live'))
+        self.options.setdefault('vod_common_dir', os.path.join(installed_location, 'vod'))
+        self.options.setdefault('vod_dir', os.path.join(installed_location, os.path.join(installed_location, 'media')))
+        self.options.setdefault('appsdir', os.path.join(installed_location, 'applications'))
+        self.options.setdefault('js_scriptlibpath', os.path.join(installed_location, 'scriptlib'))
+        
         # now we have some installed software, we need to add the services directory
         self.add_services(installed_location)
         
         # once we have the services directory, we need to alter the fmsmgr script so it knows where they live
         self.alter_fmsmgr(installed_location)
+        
+        # now we need to update the default config with the options that we have set
+        self.create_config(installed_location, self.options)
         
     def get_tarball(self, download_url, download_dir):
         """ Download the FMS release tarball
@@ -150,3 +160,46 @@ class Recipe(object):
         fmsmgr_file.close()
         
         return fmsmgr_path
+    
+    def create_config(self, installed_location, options):
+        """ Alter the config file with the options that we have set
+        
+        Arguments:
+        installed_location -- The location that FMS was extracted/installed to
+        options -- The options that we need for the config file
+        
+        Returns a list of the paths to the config files that were changed
+        """
+        
+        # get the fms.ini from the config dir of the installed FMS
+        conf_dir = os.path.join(installed_location, 'conf')
+        fms_path = os.path.join(conf_dir, 'fms.ini')
+        
+        # read in the fms.ini so we can do some manipulation
+        fms_file = open(fms_path, 'r')
+        fms_ini = fms_file.read()
+        fms_file.close()
+        
+        # normal config options
+        fms_ini = fms_ini.replace('SERVER.ADMIN_USERNAME =', 'SERVER.ADMIN_USERNAME = ' + options['admin_username'])
+        fms_ini = fms_ini.replace('SERVER.ADMIN_PASSWORD =', 'SERVER.ADMIN_PASSWORD = ' + options['admin_password'])
+        fms_ini = fms_ini.replace('SERVER.ADMINSERVER_HOSTPORT =', 'SERVER.ADMINSERVER_HOSTPORT = ' + options['adminserver_hostport'])
+        fms_ini = fms_ini.replace('SERVER.PROCESS_UID =', 'SERVER.PROCESS_UID = ' + options['process_uid'])
+        fms_ini = fms_ini.replace('SERVER.PROCESS_GID =', 'SERVER.PROCESS_GID = ' + options['process_gid'])
+        fms_ini = fms_ini.replace('SERVER.LICENSEINFO =', 'SERVER.LICENSEINFO = ' + options['licenseinfo'])
+        fms_ini = fms_ini.replace('SERVER.HTTPD_ENABLED =', 'SERVER.HTTPD_ENABLED = ' + options['httpd_enabled'].lower())
+        fms_ini = fms_ini.replace('ADAPTOR.HOSTPORT =', 'ADAPTOR.HOSTPORT = :' + options['hostport'])
+        
+        # directory based config options (these will default to the installed directory)
+        fms_ini = fms_ini.replace('LIVE_DIR =', 'LIVE_DIR = ' + options['live_dir'])
+        fms_ini = fms_ini.replace('VOD_COMMON_DIR =', 'LIVE_DIR = ' + options['vod_common_dir'])
+        fms_ini = fms_ini.replace('VOD_DIR =', 'LIVE_DIR = ' + options['vod_dir'])
+        fms_ini = fms_ini.replace('VHOST.APPSDIR =', 'LIVE_DIR = ' + options['appsdir'])
+        fms_ini = fms_ini.replace('APP.JS_SCRIPTLIBPATH =', 'LIVE_DIR = ' + options['js_scriptlibpath'])
+    
+        # write out the new fms ini
+        fms_file = open(fms_file, 'w')
+        fms_file.write(fms_ini)
+        fms_file.close()
+        
+        return [fms_file]
