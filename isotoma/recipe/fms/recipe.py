@@ -198,8 +198,8 @@ class Recipe(object):
         fms_ini = fms_ini.replace('APP.JS_SCRIPTLIBPATH =', 'LIVE_DIR = ' + options['js_scriptlibpath'])
     
         # write out the new fms ini
-        fms_file = open(fms_file, 'w')
+        fms_file = open(fms_path, 'w')
         fms_file.write(fms_ini)
         fms_file.close()
         
-        return [fms_file]
+        return [fms_path]
