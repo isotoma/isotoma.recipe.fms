@@ -11,13 +11,11 @@ def read_file(name):
 readme = read_file('README.txt')
 changes = read_file('CHANGES.txt')
 
-setup(name='isotoma.recipe.django',
+setup(name='isotoma.recipe.fms',
       version=version,
-      description="Buildout recipe for Django",
+      description="Buildout recipe to deploy Flash Media Server",
       long_description='\n\n'.join([readme, changes]),
       classifiers=[
-        'Framework :: Buildout',
-        'Framework :: Django',
         'Topic :: Software Development :: Build Tools',
         'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: BSD License',
@@ -36,6 +34,6 @@ setup(name='isotoma.recipe.django',
       entry_points="""
       # -*- Entry points: -*-
       [zc.buildout]
-      default = isotoma.recipe.django.recipe:Recipe
+      default = isotoma.recipe.fms.recipe:Recipe
       """,
       )
