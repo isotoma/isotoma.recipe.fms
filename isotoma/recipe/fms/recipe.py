@@ -22,8 +22,8 @@ class Recipe(object):
         self.options = options
         
         # set the paths we'll need
-        options['install_location'] = os.path.join(buildout['buildout']['parts-directory'], self.name) # where we'll install the FMS to
-        options['bin-directory'] = buildout['buildout']['bin-directory'] # where the bin/control scripts should live
+        self.options['install_location'] = os.path.join(buildout['buildout']['parts-directory'], self.name) # where we'll install the FMS to
+        self.options['bin-directory'] = buildout['buildout']['bin-directory'] # where the bin/control scripts should live
         
         
     def install(self):
@@ -52,6 +52,11 @@ class Recipe(object):
         
         # now we need to update the default config with the options that we have set
         self.create_config(installed_location, self.options)
+        
+        # now add the control script to bin, so we can do something with it
+        self.create_bin_file(installed_location, self.options['bin-directory'])
+        
+        return installed_location
         
     def get_tarball(self, download_url, download_dir):
         """ Download the FMS release tarball
@@ -119,7 +124,8 @@ class Recipe(object):
         # We will need to create the folder, then add the services lines as required
         
         services_dir = os.path.join(installed_location, 'services')
-        os.makedirs(services_dir)
+        if not os.path.exists(services_dir):
+            os.makedirs(services_dir)
         
         # now we have the folder, we need to populate it
         # the fms service contains a path to the installed_location
@@ -220,7 +226,7 @@ class Recipe(object):
         # This should then behave correctly.
         
         source_path = os.path.join(installed_location, 'fmsmgr')
-        target_path = os.path.join(installed_location, 'fmsmgr')
+        target_path = os.path.join(bin_directory, 'fmsmgr')
         
         shutil.copy(source_path, target_path)
         
