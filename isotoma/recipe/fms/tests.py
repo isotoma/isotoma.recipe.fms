@@ -8,10 +8,14 @@ class RetrivalTests(unittest.TestCase):
     """ Test retrieving and extracting the FMS tarball """
     
     def setUp(self):
+        """ Set up some defaults, and create an instance of the recipe, with enough mock buildout config to get by """
+        
         self.download_dir = tempfile.mkdtemp()
         self.eggs_directory = tempfile.mkdtemp()
+        self.destination = os.path.join(tempfile.mkdtemp(), 'INSTALLED')
         self.download_url = "http://localhost/~tomwardill/FlashMediaServer4_x64.tar.gz"
         
+        # create the recipe, with some mock/temporary buildout config parameters
         self.recipe = Recipe({'buildout':{
             'download-cache': self.download_dir, 
             'eggs-directory': self.eggs_directory,
@@ -31,3 +35,31 @@ class RetrivalTests(unittest.TestCase):
         
         self.assertTrue(tarball.endswith("FMS_DOWNLOAD.tar.gz"))
         self.assertTrue(os.path.exists(tarball))
+        
+    def testExtraction(self):
+        """ Test that we can extract a tarball, and move it to the correct directory """
+        tarball = self.recipe.get_tarball(self.download_url, self.download_dir)
+        
+        extracted = self.recipe.install_tarball(self.download_dir, tarball, self.destination)
+        
+        self.assertTrue(os.path.exists(extracted))
+        
+    def testServiceCreation(self):
+        
+        installed_locations = self.recipe.add_services(tempfile.mkdtemp())
+        
+        for location in installed_locations:
+            self.assertTrue('services' in location)
+            self.assertTrue(os.path.exists(location))
+            
+    def testFixFMSMGR(self):
+        
+        # we need something to work with
+        tarball = self.recipe.get_tarball(self.download_url, self.download_dir)
+        
+        extracted = self.recipe.install_tarball(self.download_dir, tarball, self.destination)
+        
+        path = self.recipe.alter_fmsmgr(self.destination)
+        
+        f = open(path).read()
+        self.assertTrue(self.destination in f)
