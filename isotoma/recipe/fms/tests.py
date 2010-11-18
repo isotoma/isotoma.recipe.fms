@@ -91,3 +91,10 @@ class RetrivalTests(unittest.TestCase):
         for loc in locations:
             f = open(loc).read()
             self.assertTrue('foo' in f)
+            
+    def testBinCreation(self):
+        """ Test the creation of the management file in the bin dir """
+        
+        path = self.recipe.create_bin_file(self.destination, tempfile.mkdtemp())
+        
+        self.assertTrue(os.path.exists(path))

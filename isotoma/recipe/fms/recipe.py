@@ -203,3 +203,25 @@ class Recipe(object):
         fms_file.close()
         
         return [fms_path]
+    
+    def create_bin_file(self, installed_location, bin_directory):
+        """ Create the bin file in the correct place
+        
+        Arguments:
+        installed_location -- The location that FMS was extracted/installed to
+        bin_directory -- The location of the bin directory to install file to
+        
+        Returns the path to the bin file
+        """
+        
+        # In theory, the fsmmgr file is all the management file that we need
+        # so we can pull our modified one out of the installed directory
+        # and put it in the bin dir.
+        # This should then behave correctly.
+        
+        source_path = os.path.join(installed_location, 'fmsmgr')
+        target_path = os.path.join(installed_location, 'fmsmgr')
+        
+        shutil.copy(source_path, target_path)
+        
+        return target_path
