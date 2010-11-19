@@ -158,7 +158,7 @@ class Recipe(object):
         fmsmgr_file.close()
         
         # now replace the inbuilt path to the services with our installed ones
-        fmsmgr_new = fmsmgr.replace('/etc/adobe/fms/services', installed_location)
+        fmsmgr_new = fmsmgr.replace('/etc/adobe/fms/services', os.path.join(installed_location + '/services'))
         
         # now we need to write that out again
         fmsmgr_file = open(fmsmgr_path, 'w')
