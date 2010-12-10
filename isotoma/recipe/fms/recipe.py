@@ -32,10 +32,18 @@ class Recipe(object):
         # the cache dir to save our downloads to
         download_dir = self.buildout['buildout']['download-cache']
         
-        # first, we need something to install
-        tarball = self.get_tarball(self.options['download_url'], download_dir)
-        # now we have that, we need to extract it
-        installed_location = self.install_tarball(download_dir, tarball, self.options['install_location'])
+                # if the destination already exists, don't reinstall it
+        # just update the configs and such
+        if not os.path.exists(self.options['install_location']):
+        
+            # first, we need something to install
+            tarball = self.get_tarball(self.options['download_url'], download_dir)
+        
+            # now we have the code, we need to extract it
+            installed_location = self.install_tarball(download_dir, tarball, self.options['install_location'])
+        else:
+            # if not, we still need to know where it _was_ installed to
+            installed_location = self.options['install_location']
         
         # set the options defaults for ourselves
         self.options.setdefault('live_dir', os.path.join(installed_location, 'live'))
