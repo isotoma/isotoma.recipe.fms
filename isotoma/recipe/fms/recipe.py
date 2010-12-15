@@ -197,7 +197,7 @@ class Recipe(object):
         # normal config options
         fms_ini = fms_ini.replace('SERVER.ADMIN_USERNAME =', 'SERVER.ADMIN_USERNAME = ' + options['admin_username'])
         fms_ini = fms_ini.replace('SERVER.ADMIN_PASSWORD =', 'SERVER.ADMIN_PASSWORD = ' + options['admin_password'])
-        fms_ini = fms_ini.replace('SERVER.ADMINSERVER_HOSTPORT =', 'SERVER.ADMINSERVER_HOSTPORT = ' + options['adminserver_hostport'])
+        fms_ini = fms_ini.replace('SERVER.ADMINSERVER_HOSTPORT =', 'SERVER.ADMINSERVER_HOSTPORT = :' + options['adminserver_hostport'])
         fms_ini = fms_ini.replace('SERVER.PROCESS_UID =', 'SERVER.PROCESS_UID = ' + options['process_uid'])
         fms_ini = fms_ini.replace('SERVER.PROCESS_GID =', 'SERVER.PROCESS_GID = ' + options['process_gid'])
         fms_ini = fms_ini.replace('SERVER.LICENSEINFO =', 'SERVER.LICENSEINFO = ' + options['licenseinfo'])
@@ -206,10 +206,10 @@ class Recipe(object):
         
         # directory based config options (these will default to the installed directory)
         fms_ini = fms_ini.replace('LIVE_DIR =', 'LIVE_DIR = ' + options['live_dir'])
-        fms_ini = fms_ini.replace('VOD_COMMON_DIR =', 'LIVE_DIR = ' + options['vod_common_dir'])
-        fms_ini = fms_ini.replace('VOD_DIR =', 'LIVE_DIR = ' + options['vod_dir'])
-        fms_ini = fms_ini.replace('VHOST.APPSDIR =', 'LIVE_DIR = ' + options['appsdir'])
-        fms_ini = fms_ini.replace('APP.JS_SCRIPTLIBPATH =', 'LIVE_DIR = ' + options['js_scriptlibpath'])
+        fms_ini = fms_ini.replace('VOD_COMMON_DIR =', 'VOD_COMMON_DIR = ' + options['vod_common_dir'])
+        fms_ini = fms_ini.replace('VOD_DIR =', 'VOD_DIR = ' + options['vod_dir'])
+        fms_ini = fms_ini.replace('VHOST.APPSDIR =', 'VHOST.APPSDIR = ' + options['appsdir'])
+        fms_ini = fms_ini.replace('APP.JS_SCRIPTLIBPATH =', 'APP.JS_SCRIPTLIBPATH = ' + options['js_scriptlibpath'])
     
         # write out the new fms ini
         fms_file = open(fms_path, 'w')
