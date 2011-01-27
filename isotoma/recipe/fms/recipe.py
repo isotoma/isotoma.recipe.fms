@@ -60,12 +60,20 @@ class Recipe(object):
         
         # now we need to update the default config with the options that we have set
         self.create_config(installed_location, self.options)
-        
+       
+        # now we need to link the system files that we're going to need
+        self.create_library_links(installed_location)
+
         # now add the control script to bin, so we can do something with it
         self.create_bin_file(installed_location, self.options['bin-directory'])
         
         return installed_location
         
+    def create_library_links(self, installed_location):
+        """ Link the system files that we need to the installed location """
+
+        os.symlink('/lib/libcap.so.2', os.path.join(installed_location, 'libcap.so.1'))
+
     def get_tarball(self, download_url, download_dir):
         """ Download the FMS release tarball
 
