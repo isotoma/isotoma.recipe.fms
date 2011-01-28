@@ -205,12 +205,18 @@ class Recipe(object):
         # normal config options
         fms_ini = fms_ini.replace('SERVER.ADMIN_USERNAME =', 'SERVER.ADMIN_USERNAME = ' + options['admin_username'])
         fms_ini = fms_ini.replace('SERVER.ADMIN_PASSWORD =', 'SERVER.ADMIN_PASSWORD = ' + options['admin_password'])
-        fms_ini = fms_ini.replace('SERVER.ADMINSERVER_HOSTPORT =', 'SERVER.ADMINSERVER_HOSTPORT = :' + options['adminserver_hostport'])
+        
+        admin_host_and_ip = options['adminserver_interface'] + ":" + options['adminserver_hostport']
+        fms_ini = fms_ini.replace('SERVER.ADMINSERVER_HOSTPORT =', 'SERVER.ADMINSERVER_HOSTPORT = ' + admin_host_and_ip)
+        
         fms_ini = fms_ini.replace('SERVER.PROCESS_UID =', 'SERVER.PROCESS_UID = ' + options['process_uid'])
         fms_ini = fms_ini.replace('SERVER.PROCESS_GID =', 'SERVER.PROCESS_GID = ' + options['process_gid'])
         fms_ini = fms_ini.replace('SERVER.LICENSEINFO =', 'SERVER.LICENSEINFO = ' + options['licenseinfo'])
         fms_ini = fms_ini.replace('SERVER.HTTPD_ENABLED =', 'SERVER.HTTPD_ENABLED = ' + options['httpd_enabled'].lower())
-        fms_ini = fms_ini.replace('ADAPTOR.HOSTPORT =', 'ADAPTOR.HOSTPORT = :' + options['hostport'])
+
+        # join these two together into the format for the config file
+        host_and_ip = options['interface'] + ":" + options['hostport']
+        fms_ini = fms_ini.replace('ADAPTOR.HOSTPORT =', 'ADAPTOR.HOSTPORT = ' + host_and_ip)
         
         # directory based config options (these will default to the installed directory)
         fms_ini = fms_ini.replace('LIVE_DIR =', 'LIVE_DIR = ' + options['live_dir'])
