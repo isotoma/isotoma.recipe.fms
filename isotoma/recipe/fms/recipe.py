@@ -230,7 +230,6 @@ class Recipe(object):
         fms_ini = re.sub(self.reg_exp % ('APP.JS_SCRIPTLIBPATH'), '\n = %s\n' % (options['js_scriptlibpath']), fms_ini)
         
         # directory based config options (these will default to the installed directory)
-        fms_ini = fms_ini.replace('LOGGER.LOGDIR = ', 'LOGGER.LOGDIR = ' + options['log_dir'])
         fms_ini = re.sub(self.reg_exp % ('LOGGER.LOGDIR'), '\nLOGGER.LOGDIR = %s\n' % (options['log_dir']), fms_ini)
     
         # write out the new fms ini
