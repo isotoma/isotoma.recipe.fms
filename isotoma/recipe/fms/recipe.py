@@ -1,10 +1,10 @@
 import logging
 import os
-import urllib2
+import re
 import shutil
-
-import zc.recipe.egg
 import setuptools
+import urllib2
+import zc.recipe.egg
 
 class Recipe(object):
     """ The main recipe object, this is the one that does stuff """
@@ -20,6 +20,9 @@ class Recipe(object):
         self.buildout = buildout
         self.name = name
         self.options = options
+        
+        # add regexp for replacing values in the config file
+        self.reg_exp ='\n%s =(.*?)\n'
         
         # set the paths we'll need
         self.options['install_location'] = os.path.join(buildout['buildout']['parts-directory'], self.name) # where we'll install the FMS to
@@ -68,12 +71,11 @@ class Recipe(object):
         # now add the control script to bin, so we can do something with it
         self.create_bin_file(installed_location, self.options['bin-directory'])
         
-        return installed_location
-        
     def create_library_links(self, installed_location):
         """ Link the system files that we need to the installed location """
-
-        os.symlink('/lib/libcap.so.2', os.path.join(installed_location, 'libcap.so.1'))
+        file_name = os.path.join(installed_location, 'libcap.so.1') 
+        if os.path.isfile(file_name):
+            os.symlink(file_name)
 
     def get_tarball(self, download_url, download_dir):
         """ Download the FMS release tarball
@@ -204,29 +206,31 @@ class Recipe(object):
         fms_file.close()
         
         # normal config options
-        fms_ini = fms_ini.replace('SERVER.ADMIN_USERNAME =', 'SERVER.ADMIN_USERNAME = ' + options['admin_username'])
-        fms_ini = fms_ini.replace('SERVER.ADMIN_PASSWORD =', 'SERVER.ADMIN_PASSWORD = ' + options['admin_password'])
-        
-        admin_host_and_ip = options['adminserver_interface'] + ":" + options['adminserver_hostport']
-        fms_ini = fms_ini.replace('SERVER.ADMINSERVER_HOSTPORT =', 'SERVER.ADMINSERVER_HOSTPORT = ' + admin_host_and_ip)
-        
-        fms_ini = fms_ini.replace('SERVER.PROCESS_UID =', 'SERVER.PROCESS_UID = ' + options['process_uid'])
-        fms_ini = fms_ini.replace('SERVER.PROCESS_GID =', 'SERVER.PROCESS_GID = ' + options['process_gid'])
-        fms_ini = fms_ini.replace('SERVER.LICENSEINFO =', 'SERVER.LICENSEINFO = ' + options['licenseinfo'])
-        fms_ini = fms_ini.replace('SERVER.HTTPD_ENABLED =', 'SERVER.HTTPD_ENABLED = ' + options['httpd_enabled'].lower())
+        fms_ini = re.sub(self.reg_exp % ('SERVER.ADMIN_USERNAME'), '\nSERVER.ADMIN_USERNAME = %s\n' % (options['admin_username']), fms_ini)
+        fms_ini = re.sub(self.reg_exp % ('SERVER.ADMIN_PASSWORD'), '\nSERVER.ADMIN_PASSWORD = %s\n' % (options['admin_password']), fms_ini)
 
         # join these two together into the format for the config file
+        admin_host_and_ip = options['adminserver_interface'] + ":" + options['adminserver_hostport']
+        fms_ini = re.sub(self.reg_exp % ('SERVER.ADMINSERVER_HOSTPORT'), '\nSERVER.ADMINSERVER_HOSTPORT = %s\n' % (admin_host_and_ip), fms_ini)
+        
+        fms_ini = re.sub(self.reg_exp % ('SERVER.PROCESS_UID'), '\nSERVER.PROCESS_UID = %s\n' % (options['process_uid']), fms_ini)
+        fms_ini = re.sub(self.reg_exp % ('SERVER.PROCESS_GID'), '\nSERVER.PROCESS_GID = %s\n' % (options['process_gid']), fms_ini)
+        fms_ini = re.sub(self.reg_exp % ('SERVER.LICENSEINFO'), '\nSERVER.LICENSEINFO = %s\n' % (options['licenseinfo']), fms_ini)
+        fms_ini = re.sub(self.reg_exp % ('SERVER.HTTPD_ENABLED'), '\nSERVER.HTTPD_ENABLED = %s\n' % (options['httpd_enabled'].lower()), fms_ini)
+        
+        # join these two together into the format for the config file
         host_and_ip = options['interface'] + ":" + options['hostport']
-        fms_ini = fms_ini.replace('ADAPTOR.HOSTPORT =', 'ADAPTOR.HOSTPORT = ' + host_and_ip)
+        fms_ini = re.sub(self.reg_exp % ('ADAPTOR.HOSTPORT'), '\nADAPTOR.HOSTPORT = :%s\n' % (options['hostport']), fms_ini)
         
         # directory based config options (these will default to the installed directory)
-        fms_ini = fms_ini.replace('LIVE_DIR =', 'LIVE_DIR = ' + options['live_dir'])
-        fms_ini = fms_ini.replace('VOD_COMMON_DIR =', 'VOD_COMMON_DIR = ' + options['vod_common_dir'])
-        fms_ini = fms_ini.replace('VOD_DIR =', 'VOD_DIR = ' + options['vod_dir'])
-        fms_ini = fms_ini.replace('VHOST.APPSDIR =', 'VHOST.APPSDIR = ' + options['appsdir'])
-        fms_ini = fms_ini.replace('APP.JS_SCRIPTLIBPATH =', 'APP.JS_SCRIPTLIBPATH = ' + options['js_scriptlibpath'])
+        fms_ini = re.sub(self.reg_exp % ('LIVE_DIR'), '\nLIVE_DIR = %s\n' % (options['live_dir']), fms_ini)
+        fms_ini = re.sub(self.reg_exp % ('VOD_COMMON_DIR'), '\nVOD_COMMON_DIR = %s\n' % (options['vod_common_dir']), fms_ini)
+        fms_ini = re.sub(self.reg_exp % ('VOD_DIR'), '\nVOD_DIR = %s\n' % (options['vod_dir']), fms_ini)
+        fms_ini = re.sub(self.reg_exp % ('VHOST.APPSDIR'), '\nVHOST.APPSDIR = %s\n' % (options['appsdir']), fms_ini)
+        fms_ini = re.sub(self.reg_exp % ('APP.JS_SCRIPTLIBPATH'), '\n = %s\n' % (options['js_scriptlibpath']), fms_ini)
         
-        fms_ini = fms_ini.replace('LOGGER.LOGDIR =', 'LOGGER.LOGDIR = ' + options['log_dir'])
+        # directory based config options (these will default to the installed directory)
+        fms_ini = re.sub(self.reg_exp % ('LOGGER.LOGDIR'), '\nLOGGER.LOGDIR = %s\n' % (options['log_dir']), fms_ini)
     
         # write out the new fms ini
         fms_file = open(fms_path, 'w')
