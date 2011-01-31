@@ -51,6 +51,7 @@ class Recipe(object):
         self.options.setdefault('vod_dir', os.path.join(installed_location, os.path.join(installed_location, 'media')))
         self.options.setdefault('appsdir', os.path.join(installed_location, 'applications'))
         self.options.setdefault('js_scriptlibpath', os.path.join(installed_location, 'scriptlib'))
+        self.options.setdefault('log_dir', '')
         
         # now we have some installed software, we need to add the services directory
         self.add_services(installed_location)
@@ -224,6 +225,10 @@ class Recipe(object):
         fms_ini = fms_ini.replace('VOD_DIR =', 'VOD_DIR = ' + options['vod_dir'])
         fms_ini = fms_ini.replace('VHOST.APPSDIR =', 'VHOST.APPSDIR = ' + options['appsdir'])
         fms_ini = fms_ini.replace('APP.JS_SCRIPTLIBPATH =', 'APP.JS_SCRIPTLIBPATH = ' + options['js_scriptlibpath'])
+        
+        print "LOG"
+        print options['log_dir']
+        fms_ini = fms_ini.replace('LOGGER.LOGDIR = ', 'LOGGER.LOGDIR = ' + options['log_dir'])
     
         # write out the new fms ini
         fms_file = open(fms_path, 'w')
