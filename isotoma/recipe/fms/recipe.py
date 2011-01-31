@@ -54,6 +54,7 @@ class Recipe(object):
         self.options.setdefault('vod_dir', os.path.join(installed_location, os.path.join(installed_location, 'media')))
         self.options.setdefault('appsdir', os.path.join(installed_location, 'applications'))
         self.options.setdefault('js_scriptlibpath', os.path.join(installed_location, 'scriptlib'))
+        self.options.setdefault('log_dir', '')
         
         # now we have some installed software, we need to add the services directory
         self.add_services(installed_location)
@@ -207,11 +208,18 @@ class Recipe(object):
         # normal config options
         fms_ini = re.sub(self.reg_exp % ('SERVER.ADMIN_USERNAME'), '\nSERVER.ADMIN_USERNAME = %s\n' % (options['admin_username']), fms_ini)
         fms_ini = re.sub(self.reg_exp % ('SERVER.ADMIN_PASSWORD'), '\nSERVER.ADMIN_PASSWORD = %s\n' % (options['admin_password']), fms_ini)
-        fms_ini = re.sub(self.reg_exp % ('SERVER.ADMINSERVER_HOSTPORT'), '\nSERVER.ADMINSERVER_HOSTPORT = %s\n' % (options['adminserver_hostport']), fms_ini)
+
+        # join these two together into the format for the config file
+        admin_host_and_ip = options['adminserver_interface'] + ":" + options['adminserver_hostport']
+        fms_ini = re.sub(self.reg_exp % ('SERVER.ADMINSERVER_HOSTPORT'), '\nSERVER.ADMINSERVER_HOSTPORT = %s\n' % (admin_host_and_ip), fms_ini)
+        
         fms_ini = re.sub(self.reg_exp % ('SERVER.PROCESS_UID'), '\nSERVER.PROCESS_UID = %s\n' % (options['process_uid']), fms_ini)
         fms_ini = re.sub(self.reg_exp % ('SERVER.PROCESS_GID'), '\nSERVER.PROCESS_GID = %s\n' % (options['process_gid']), fms_ini)
         fms_ini = re.sub(self.reg_exp % ('SERVER.LICENSEINFO'), '\nSERVER.LICENSEINFO = %s\n' % (options['licenseinfo']), fms_ini)
         fms_ini = re.sub(self.reg_exp % ('SERVER.HTTPD_ENABLED'), '\nSERVER.HTTPD_ENABLED = %s\n' % (options['httpd_enabled'].lower()), fms_ini)
+        
+        # join these two together into the format for the config file
+        host_and_ip = options['interface'] + ":" + options['hostport']
         fms_ini = re.sub(self.reg_exp % ('ADAPTOR.HOSTPORT'), '\nADAPTOR.HOSTPORT = :%s\n' % (options['hostport']), fms_ini)
         
         # directory based config options (these will default to the installed directory)
@@ -220,6 +228,10 @@ class Recipe(object):
         fms_ini = re.sub(self.reg_exp % ('VOD_DIR'), '\nVOD_DIR = %s\n' % (options['vod_dir']), fms_ini)
         fms_ini = re.sub(self.reg_exp % ('VHOST.APPSDIR'), '\nVHOST.APPSDIR = %s\n' % (options['appsdir']), fms_ini)
         fms_ini = re.sub(self.reg_exp % ('APP.JS_SCRIPTLIBPATH'), '\n = %s\n' % (options['js_scriptlibpath']), fms_ini)
+        
+        # directory based config options (these will default to the installed directory)
+        fms_ini = fms_ini.replace('LOGGER.LOGDIR = ', 'LOGGER.LOGDIR = ' + options['log_dir'])
+        fms_ini = re.sub(self.reg_exp % ('LOGGER.LOGDIR'), '\nLOGGER.LOGDIR = %s\n' % (options['log_dir']), fms_ini)
     
         # write out the new fms ini
         fms_file = open(fms_path, 'w')
