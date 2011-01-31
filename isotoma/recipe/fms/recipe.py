@@ -226,8 +226,6 @@ class Recipe(object):
         fms_ini = fms_ini.replace('VHOST.APPSDIR =', 'VHOST.APPSDIR = ' + options['appsdir'])
         fms_ini = fms_ini.replace('APP.JS_SCRIPTLIBPATH =', 'APP.JS_SCRIPTLIBPATH = ' + options['js_scriptlibpath'])
         
-        print "LOG"
-        print options['log_dir']
         fms_ini = fms_ini.replace('LOGGER.LOGDIR = ', 'LOGGER.LOGDIR = ' + options['log_dir'])
     
         # write out the new fms ini
