@@ -229,7 +229,7 @@ class Recipe(object):
         
         # join these two together into the format for the config file
         host_and_ip = options['interface'] + ":" + options['hostport']
-        fms_ini = set_ini_option(fms_ini, 'ADAPTOR.HOSTPORT', options['hostport'])
+        fms_ini = set_ini_option(fms_ini, 'ADAPTOR.HOSTPORT', host_and_ip)
         
         # directory based config options (these will default to the installed directory)
         fms_ini = set_ini_option(fms_ini, 'LIVE_DIR', options['live_dir'])
