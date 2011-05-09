@@ -205,32 +205,39 @@ class Recipe(object):
         fms_ini = fms_file.read()
         fms_file.close()
         
+        def set_ini_option(ini_data, key, value):
+            ini_data, replaced = re.subn(self.reg_exp % (key,), '\n%s = %s\n' % (key, value), ini_data)
+            if not replaced:
+                ini_data = ini_data + '\n%s = %s\n'
+
+            return ini_data
+        
         # normal config options
-        fms_ini = re.sub(self.reg_exp % ('SERVER.ADMIN_USERNAME'), '\nSERVER.ADMIN_USERNAME = %s\n' % (options['admin_username']), fms_ini)
-        fms_ini = re.sub(self.reg_exp % ('SERVER.ADMIN_PASSWORD'), '\nSERVER.ADMIN_PASSWORD = %s\n' % (options['admin_password']), fms_ini)
+        fms_ini = set_ini_option(fms_ini, 'SERVER.ADMIN_USERNAME', options['admin_username'])
+        fms_ini = set_ini_option(fms_ini, 'SERVER.ADMIN_PASSWORD', options['admin_password'])
 
         # join these two together into the format for the config file
         admin_host_and_ip = options['adminserver_interface'] + ":" + options['adminserver_hostport']
-        fms_ini = re.sub(self.reg_exp % ('SERVER.ADMINSERVER_HOSTPORT'), '\nSERVER.ADMINSERVER_HOSTPORT = %s\n' % (admin_host_and_ip), fms_ini)
+        fms_ini = set_ini_option(fms_ini, 'SERVER.ADMINSERVER_HOSTPORT', admin_host_and_ip)
         
-        fms_ini = re.sub(self.reg_exp % ('SERVER.PROCESS_UID'), '\nSERVER.PROCESS_UID = %s\n' % (options['process_uid']), fms_ini)
-        fms_ini = re.sub(self.reg_exp % ('SERVER.PROCESS_GID'), '\nSERVER.PROCESS_GID = %s\n' % (options['process_gid']), fms_ini)
-        fms_ini = re.sub(self.reg_exp % ('SERVER.LICENSEINFO'), '\nSERVER.LICENSEINFO = %s\n' % (options['licenseinfo']), fms_ini)
-        fms_ini = re.sub(self.reg_exp % ('SERVER.HTTPD_ENABLED'), '\nSERVER.HTTPD_ENABLED = %s\n' % (options['httpd_enabled'].lower()), fms_ini)
+        fms_ini = set_ini_option(fms_ini, 'SERVER.PROCESS_UID', options['process_uid'])
+        fms_ini = set_ini_option(fms_ini, 'SERVER.PROCESS_GID', options['process_gid'])
+        fms_ini = set_ini_option(fms_ini, 'SERVER.LICENSEINFO', options['licenseinfo'])
+        fms_ini = set_ini_option(fms_ini, 'SERVER.HTTPD_ENABLED', options['httpd_enabled'].lower())
         
         # join these two together into the format for the config file
         host_and_ip = options['interface'] + ":" + options['hostport']
-        fms_ini = re.sub(self.reg_exp % ('ADAPTOR.HOSTPORT'), '\nADAPTOR.HOSTPORT = :%s\n' % (options['hostport']), fms_ini)
+        fms_ini = set_ini_option(fms_ini, 'ADAPTOR.HOSTPORT', options['hostport'])
         
         # directory based config options (these will default to the installed directory)
-        fms_ini = re.sub(self.reg_exp % ('LIVE_DIR'), '\nLIVE_DIR = %s\n' % (options['live_dir']), fms_ini)
-        fms_ini = re.sub(self.reg_exp % ('VOD_COMMON_DIR'), '\nVOD_COMMON_DIR = %s\n' % (options['vod_common_dir']), fms_ini)
-        fms_ini = re.sub(self.reg_exp % ('VOD_DIR'), '\nVOD_DIR = %s\n' % (options['vod_dir']), fms_ini)
-        fms_ini = re.sub(self.reg_exp % ('VHOST.APPSDIR'), '\nVHOST.APPSDIR = %s\n' % (options['appsdir']), fms_ini)
-        fms_ini = re.sub(self.reg_exp % ('APP.JS_SCRIPTLIBPATH'), '\n = %s\n' % (options['js_scriptlibpath']), fms_ini)
+        fms_ini = set_ini_option(fms_ini, 'LIVE_DIR', options['live_dir'])
+        fms_ini = set_ini_option(fms_ini, 'VOD_COMMON_DIR', options['vod_common_dir'])
+        fms_ini = set_ini_option(fms_ini, 'VOD_DIR', options['vod_dir'])
+        fms_ini = set_ini_option(fms_ini, 'VHOST.APPSDIR', options['appsdir'])
+        fms_ini = set_ini_option(fms_ini, 'APP.JS_SCRIPTLIBPATH', options['js_scriptlibpath'])
         
         # directory based config options (these will default to the installed directory)
-        fms_ini = re.sub(self.reg_exp % ('LOGGER.LOGDIR'), '\nLOGGER.LOGDIR = %s\n' % (options['log_dir']), fms_ini)
+        fms_ini = set_ini_option(fms_ini, 'LOGGER.LOGDIR', options['log_dir'])
     
         # write out the new fms ini
         fms_file = open(fms_path, 'w')
