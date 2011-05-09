@@ -27,7 +27,15 @@ class Recipe(object):
         # set the paths we'll need
         self.options['install_location'] = os.path.join(buildout['buildout']['parts-directory'], self.name) # where we'll install the FMS to
         self.options['bin-directory'] = buildout['buildout']['bin-directory'] # where the bin/control scripts should live
-        
+
+    def set_defaults(self, installed_location):
+        # set the options defaults for ourselves
+        self.options.setdefault('live_dir', os.path.join(installed_location, 'live'))
+        self.options.setdefault('vod_common_dir', os.path.join(installed_location, 'vod'))
+        self.options.setdefault('vod_dir', os.path.join(installed_location, os.path.join(installed_location, 'media')))
+        self.options.setdefault('appsdir', os.path.join(installed_location, 'applications'))
+        self.options.setdefault('js_scriptlibpath', os.path.join(installed_location, 'scriptlib'))
+        self.options.setdefault('log_dir', '')
         
     def install(self):
         """ Install the FMS, using the options in the buildout """
@@ -48,13 +56,7 @@ class Recipe(object):
             # if not, we still need to know where it _was_ installed to
             installed_location = self.options['install_location']
         
-        # set the options defaults for ourselves
-        self.options.setdefault('live_dir', os.path.join(installed_location, 'live'))
-        self.options.setdefault('vod_common_dir', os.path.join(installed_location, 'vod'))
-        self.options.setdefault('vod_dir', os.path.join(installed_location, os.path.join(installed_location, 'media')))
-        self.options.setdefault('appsdir', os.path.join(installed_location, 'applications'))
-        self.options.setdefault('js_scriptlibpath', os.path.join(installed_location, 'scriptlib'))
-        self.options.setdefault('log_dir', '')
+        self.set_defaults(installed_location)
         
         # now we have some installed software, we need to add the services directory
         self.add_services(installed_location)
@@ -74,8 +76,8 @@ class Recipe(object):
     def create_library_links(self, installed_location):
         """ Link the system files that we need to the installed location """
         file_name = os.path.join(installed_location, 'libcap.so.1') 
-        if os.path.isfile(file_name):
-            os.symlink(file_name)
+        if not os.path.isfile(file_name):
+            os.symlink('/lib/libcap.so.1', file_name)
 
     def get_tarball(self, download_url, download_dir):
         """ Download the FMS release tarball
@@ -206,9 +208,9 @@ class Recipe(object):
         fms_file.close()
         
         def set_ini_option(ini_data, key, value):
-            ini_data, replaced = re.subn(self.reg_exp % (key,), '\n%s = %s\n' % (key, value), ini_data)
+            ini_data, replaced = re.subn(self.reg_exp % (re.escape(key),), '\n%s = %s\n' % (key, value), ini_data)
             if not replaced:
-                ini_data = ini_data + '\n%s = %s\n'
+                ini_data = ini_data + '\n%s = %s\n' % (key, value)
 
             return ini_data
         
@@ -267,3 +269,8 @@ class Recipe(object):
         shutil.copy(source_path, target_path)
         
         return target_path
+
+    def update(self):
+        self.set_defaults(self.options['install_location'])
+        # now we need to update the default config with the options that we have set
+        self.create_config(self.options['install_location'], self.options)
