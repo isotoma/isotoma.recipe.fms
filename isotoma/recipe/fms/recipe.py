@@ -83,7 +83,7 @@ class Recipe(object):
             res = re.search(expr, 
                             os.popen('/sbin/ldconfig -p 2>/dev/null').read())
             if res:
-                os.symlink(res.group(0), 'libcap.so.1')
+                os.symlink(res.group(0), file_name)
 
     def get_tarball(self, download_url, download_dir):
         """ Download the FMS release tarball
