@@ -1,4 +1,3 @@
-from glob import glob
 import logging
 import os
 import re
@@ -76,8 +75,8 @@ class Recipe(object):
         
     def create_library_links(self, installed_location):
         """ Link the system files that we need to the installed location """
-        file_name = os.path.join(installed_location, 'libcap.so.*') 
-        if not glob(file_name):
+        file_name = os.path.join(installed_location, 'libcap.so.1') 
+        if not os.path.exists(file_name):
             # Next 2 lines borrowed from ctypes.util source since
             # ctypes.util.find_library doesn't give us the full path on *nix
             expr = r'/[^\(\)\s]*(libcap\.[^\(\)\s]*)'
